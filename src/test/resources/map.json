@@ -1,0 +1,24 @@
+{
+  "vertex": [
+    {"id": 0, "type": "base"},
+    {"id": 1, "type": "cross"},
+    {"id": 2, "type": "cross"},
+    {"id": 3, "type": "cross"},
+    {"id": 4, "type": "cross"},
+    {"id": 5, "type": "mine", "resources": 5},
+    {"id": 6, "type": "cross"},
+    {"id": 7, "type": "mine", "resources": 5}
+  ],
+  "edge": [
+    {"start": 0, "stop": 1, "size": 11},
+    {"start": 0, "stop": 2, "size": 5},
+    {"start": 1, "stop": 3, "size": 4},
+    {"start": 2, "stop": 3, "size": 11},
+    {"start": 3, "stop": 4, "size": 10},
+    {"start": 4, "stop": 5, "size": 4},
+    {"start": 5, "stop": 6, "size": 1},
+    {"start": 6, "stop": 7, "size": 8}
+  ],
+  "robot": {"size": 10},
+  "goal": {"resources": 10}
+}

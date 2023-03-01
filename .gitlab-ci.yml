@@ -1,0 +1,23 @@
+stages:
+  - build
+  - check
+
+build:
+  stage: build
+  script: mvn package
+  only: [main]
+  artifacts:
+    paths:
+      - target/mars-rover-1.0-jar-with-dependencies.jar
+
+check_map:
+  stage: check
+  variables:
+    MAP_NAME: "${MAP_NAME}"
+    DATE_COMMIT: "${CI_COMMIT_TIMESTAMP}"
+    AUTHOR_COMMIT: "${GITLAB_USER_LOGIN}"
+  script: map-validator
+  only: [main]
+  parallel:
+    matrix:
+      - MAP_NAME: [ "01", "02", "03", "04" ]
