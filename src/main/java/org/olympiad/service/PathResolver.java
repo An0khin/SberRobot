@@ -16,6 +16,7 @@ public class PathResolver {
     private static final Logger logger = LogManager.getLogger(PathResolver.class);
     private List<List<Vertex>> needMines = new ArrayList<>();
     private List<Vertex> allMines = new ArrayList<>();
+    private java.util.Map<Integer, Integer> idToResources = new HashMap<>();
 
 
     // метод находит оптимальный путь для сбора необходимого количества ресурсов и доставки их на базу
@@ -23,15 +24,15 @@ public class PathResolver {
 
         var edges = map.edge();
         var vertices = map.vertex();
-        var goal = map.goal().resources();
+//        var goal = map.goal().resources();
         var robotSize = map.robot().size();
         var curRes = 0;
+        var leftResources = map.goal().resources();
 
         var baseVertex = vertices.stream()
                 .filter(vertex -> vertex.type().equals(BASE))
                 .findFirst()
                 .get();
-
 
         var mapFromTo = paths(baseVertex.id(), edges, vertices);
 //        List<VertexPath> paths = mapFromTo.values().stream()
@@ -52,18 +53,23 @@ public class PathResolver {
 //                .map(Vertex::id)
                 .toList();
 
-        getNeedMines(-1, goal, new ArrayList<>());
+        allMines.forEach(mine -> idToResources.put(mine.id(), mine.resources()));
+
+        getNeedMines(-1, leftResources, new ArrayList<>());
         logger.info(needMines);
 
-        List<Integer> answerPath = new ArrayList<>();
+        List<Integer> resultPathWithRepeats = new ArrayList<>();
 
-        for(int stage = 0; stage < (goal / robotSize + (goal % robotSize != 0 ? 1 : 0)); stage++) {
+        //for(int stage = 0; stage < (goal / robotSize + (goal % robotSize != 0 ? 1 : 0)); stage++) {
+        while(leftResources > 0) {
 
-            int optimalPathLength = Integer.MAX_VALUE;
+            int pathLength = Integer.MAX_VALUE;
+            List<Integer> path = new ArrayList<>();
             List<Integer> optimalPath = new ArrayList<>();
             int curLength;
             List<Integer> curPath;
             int startId;
+            getNeedMines(-1, leftResources, new ArrayList<>());
 
             for(List<Vertex> mines : needMines) {
                 curLength = 0;
@@ -78,17 +84,63 @@ public class PathResolver {
                     startId = mine.id();
                 }
 
-                if(curLength <= optimalPathLength) {
-                    optimalPathLength = curLength;
-                    optimalPath = curPath;
+                if(curLength <= pathLength) {
+                    pathLength = curLength;
+                    path = curPath;
                 }
             }
 
-            answerPath.addAll(optimalPath);
-            answerPath.addAll(paths(optimalPath.get(optimalPath.size() - 1), edges, vertices).get(baseVertex.id()).path());
+            for(int id : path) {
+                logger.info("Id == " + id);
+                if(curRes == robotSize || curRes >= leftResources)
+                    break;
+
+                if(id == baseVertex.id()) {
+                    leftResources -= curRes;
+                    curRes = 0;
+                }
+
+                if(idToResources.containsKey(id)) {
+                    logger.info("Id " + id + " in map");
+                    logger.info("Resources right now = " + curRes);
+                    int tempRes = curRes;
+
+                    int mineResources = idToResources.get(id);
+                    logger.info("Id " + id + " has " + mineResources + " resources");
+
+                    if(tempRes + mineResources > robotSize) {
+                        logger.info("Will be more than robot size");
+                        curRes = robotSize;
+                        idToResources.replace(id, (tempRes + mineResources) - robotSize);
+                    } else {
+                        curRes += mineResources;
+                        idToResources.replace(id, 0);
+                    }
+                }
+
+                optimalPath.add(id);
+            }
+
+//            optimalPath = path;
+
+            resultPathWithRepeats.addAll(optimalPath);
+            resultPathWithRepeats.addAll(paths(optimalPath.get(optimalPath.size() - 1), edges, vertices).get(baseVertex.id()).path());
+
+            leftResources -= curRes;
+            curRes = 0;
+//            leftResources = 0;
         }
 
-        logger.info(answerPath);
+        List<Integer> answerPath = new ArrayList<>();
+
+        var previousId = -1;
+        for(int id : resultPathWithRepeats) {
+            if(id != previousId)
+                answerPath.add(id);
+            previousId = id;
+        }
+
+        logger.info(answerPath); //0 4 0 1 0 3 0 1 2 5 2 1 0
 
 //        logger.info(findPath(3, 7, edges, vertices));
 
@@ -142,7 +194,7 @@ public class PathResolver {
 
                 var curVertexPath = new VertexPath(
                         fastestVertex.length() + curEdge.size(),
-                        fastestVertex.resources() + curVertex.resources(),
+                        fastestVertex.resources() + (idToResources.containsKey(curVertex.id()) ? idToResources.get(curVertex.id()) : 0),
                         path);
 
                 if(fasterPaths.containsKey(pointId) && fasterPaths.get(pointId).length() > curVertexPath.length()) {
@@ -170,7 +222,7 @@ public class PathResolver {
     }
 
     private void getNeedMines(int counter, int goal, List<Vertex> curMines) {
-        if(curMines.stream().map(Vertex::resources).reduce((i1, i2) -> i1+i2).orElse(0) >= goal) {
+        if(curMines.stream().map(vertex -> idToResources.get(vertex.id())).reduce((i1, i2) -> i1+i2).orElse(0) >= goal) {
             needMines.add(curMines);
         }
         if(counter == allMines.size()) {
