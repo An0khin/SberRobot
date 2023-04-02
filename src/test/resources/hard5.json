@@ -1,0 +1,195 @@
+{
+  "vertex": [
+    {
+      "id": 0,
+      "type": "base"
+    },
+    {
+      "id": 1,
+      "type": "cross"
+    },
+    {
+      "id": 2,
+      "type": "cross"
+    },
+    {
+      "id": 3,
+      "type": "cross"
+    },
+    {
+      "id": 4,
+      "type": "cross"
+    },
+    {
+      "id": 5,
+      "type": "cross"
+    },
+    {
+      "id": 6,
+      "type": "mine",
+      "resources": 7
+    },
+    {
+      "id": 7,
+      "type": "cross"
+    },
+    {
+      "id": 8,
+      "type": "cross"
+    },
+    {
+      "id": 9,
+      "type": "cross"
+    },
+    {
+      "id": 10,
+      "type": "mine",
+      "resources": 5
+    },
+    {
+      "id": 11,
+      "type": "cross"
+    },
+    {
+      "id": 12,
+      "type": "cross"
+    },
+    {
+      "id": 13,
+      "type": "cross"
+    },
+    {
+      "id": 14,
+      "type": "mine",
+      "resources": 6
+    }
+  ],
+  "edge": [
+    {
+      "start": 0,
+      "stop": 1,
+      "size": 7
+    },
+    {
+      "start": 0,
+      "stop": 3,
+      "size": 8
+    },
+    {
+      "start": 1,
+      "stop": 2,
+      "size": 10
+    },
+    {
+      "start": 1,
+      "stop": 5,
+      "size": 9
+    },
+    {
+      "start": 2,
+      "stop": 5,
+      "size": 8
+    },
+    {
+      "start": 3,
+      "stop": 5,
+      "size": 10
+    },
+    {
+      "start": 3,
+      "stop": 4,
+      "size": 2
+    },
+    {
+      "start": 1,
+      "stop": 2,
+      "size": 10
+    },
+    {
+      "start": 4,
+      "stop": 6,
+      "size": 100
+    },
+    {
+      "start": 4,
+      "stop": 7,
+      "size": 2
+    },
+    {
+      "start": 6,
+      "stop": 7,
+      "size": 50
+    },
+    {
+      "start": 7,
+      "stop": 8,
+      "size": 2
+    },
+    {
+      "start": 7,
+      "stop": 14,
+      "size": 11
+    },
+    {
+      "start": 8,
+      "stop": 14,
+      "size": 1
+    },
+    {
+      "start": 5,
+      "stop": 8,
+      "size": 9
+    },
+    {
+      "start": 8,
+      "stop": 9,
+      "size": 11
+    },
+    {
+      "start": 14,
+      "stop": 13,
+      "size": 2
+    },
+    {
+      "start": 9,
+      "stop": 13,
+      "size": 6
+    },
+    {
+      "start": 9,
+      "stop": 12,
+      "size": 8
+    },
+    {
+      "start": 12,
+      "stop": 13,
+      "size": 2
+    },
+    {
+      "start": 2,
+      "stop": 10,
+      "size": 7
+    },
+    {
+      "start": 10,
+      "stop": 12,
+      "size": 2
+    },
+    {
+      "start": 10,
+      "stop": 11,
+      "size": 8
+    },
+    {
+      "start": 11,
+      "stop": 12,
+      "size": 9
+    }
+  ],
+  "robot": {
+    "size": 5
+  },
+  "goal": {
+    "resources": 10
+  }
+}

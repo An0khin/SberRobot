@@ -14,11 +14,9 @@ public class PathResolver {
     public static final String MINE = "mine";
 
     private static final Logger logger = LogManager.getLogger(PathResolver.class);
-
-    private List<Vertex> allMines = new ArrayList<>();
     private final List<List<Vertex>> needMines = new ArrayList<>();
-
     private final java.util.Map<Integer, Integer> idToResources = new HashMap<>();
+    private List<Vertex> allMines = new ArrayList<>();
 
     // метод находит оптимальный путь для сбора необходимого количества ресурсов и доставки их на базу
     public Answer findAnswer(Map map) {
@@ -37,6 +35,7 @@ public class PathResolver {
 
         allMines = vertices.stream()
                 .filter(vertex -> vertex.type().equals(MINE))
+                .filter(vertex -> firstPath.get(vertex.id()) != null)
                 .sorted(Comparator
                         .comparing(mine -> firstPath.get(((Vertex) mine).id()).length())
                         .thenComparing(o -> ((Vertex) o).resources(), Comparator.reverseOrder()))
@@ -134,7 +133,12 @@ public class PathResolver {
                     .sorted(Comparator.comparing(VertexPath::length))
                     .filter(Predicate.not(vertex -> passedPoints.contains(vertex.stop())))
                     .findFirst()
-                    .orElseThrow();
+                    .orElse(null);
+
+            if(fastestVertex == null) {
+                break;
+            }
+
             var fastestVertexId = fastestVertex.stop();
 
             var closePoints = getClosePoints(fastestVertexId, edges).stream()

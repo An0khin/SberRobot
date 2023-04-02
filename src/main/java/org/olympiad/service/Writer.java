@@ -18,8 +18,8 @@ public class Writer {
 
     public void write() throws IOException {
         Gson gson = new Gson();
-        try (FileWriter fileWriter = new FileWriter(pathToFile);
-             PrintWriter printWriter = new PrintWriter(fileWriter)) {
+        try(FileWriter fileWriter = new FileWriter(pathToFile);
+            PrintWriter printWriter = new PrintWriter(fileWriter)) {
             printWriter.print(gson.toJson(path));
         }
     }

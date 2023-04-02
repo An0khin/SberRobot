@@ -1,0 +1,123 @@
+{
+  "vertex": [
+    {
+      "id": 0,
+      "type": "base"
+    },
+    {
+      "id": 1,
+      "type": "cross"
+    },
+    {
+      "id": 2,
+      "type": "cross"
+    },
+    {
+      "id": 3,
+      "type": "cross"
+    },
+    {
+      "id": 4,
+      "type": "cross"
+    },
+    {
+      "id": 5,
+      "type": "cross"
+    },
+    {
+      "id": 6,
+      "type": "mine",
+      "resources": 5
+    },
+    {
+      "id": 7,
+      "type": "mine",
+      "resources": 10
+    },
+    {
+      "id": 8,
+      "type": "cross"
+    },
+    {
+      "id": 9,
+      "type": "cross"
+    },
+    {
+      "id": 10,
+      "type": "cross"
+    }
+  ],
+  "edge": [
+    {
+      "start": 0,
+      "stop": 1,
+      "size": 1
+    },
+    {
+      "start": 0,
+      "stop": 2,
+      "size": 1
+    },
+    {
+      "start": 2,
+      "stop": 4,
+      "size": 1
+    },
+    {
+      "start": 4,
+      "stop": 5,
+      "size": 1
+    },
+    {
+      "start": 1,
+      "stop": 3,
+      "size": 2
+    },
+    {
+      "start": 1,
+      "stop": 6,
+      "size": 5
+    },
+    {
+      "start": 3,
+      "stop": 7,
+      "size": 4
+    },
+    {
+      "start": 6,
+      "stop": 8,
+      "size": 5
+    },
+    {
+      "start": 7,
+      "stop": 8,
+      "size": 6
+    },
+    {
+      "start": 7,
+      "stop": 9,
+      "size": 8
+    },
+    {
+      "start": 8,
+      "stop": 9,
+      "size": 8
+    },
+    {
+      "start": 8,
+      "stop": 10,
+      "size": 5
+    },
+    {
+      "start": 9,
+      "stop": 10,
+      "size": 4
+    }
+  ],
+  "robot": {
+    "size": 5
+  },
+  "goal": {
+    "resources": 15
+  }
+}

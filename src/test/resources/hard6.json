@@ -1,12 +1,8 @@
 {
   "vertex": [
     {
-      "id": 0,
-      "type": "base"
-    },
-    {
       "id": 1,
-      "type": "cross"
+      "type": "base"
     },
     {
       "id": 2,
@@ -14,7 +10,8 @@
     },
     {
       "id": 3,
-      "type": "cross"
+      "type": "mine",
+      "resources": 6
     },
     {
       "id": 4,
@@ -22,63 +19,58 @@
     },
     {
       "id": 5,
-      "type": "mine",
-      "resources": 5
-    },
-    {
-      "id": 6,
       "type": "cross"
     },
     {
-      "id": 7,
+      "id": 6,
       "type": "mine",
-      "resources": 5
+      "resources": 10
     }
   ],
   "edge": [
     {
-      "start": 0,
-      "stop": 1,
-      "size": 11
-    },
-    {
-      "start": 0,
-      "stop": 2,
-      "size": 5
-    },
-    {
       "start": 1,
-      "stop": 3,
-      "size": 4
+      "stop": 2,
+      "size": 2
     },
     {
       "start": 2,
       "stop": 3,
-      "size": 11
+      "size": 3
     },
     {
-      "start": 3,
+      "start": 1,
       "stop": 4,
       "size": 10
     },
     {
+      "start": 2,
+      "stop": 4,
+      "size": 4
+    },
+    {
       "start": 4,
       "stop": 5,
-      "size": 4
+      "size": 12
     },
     {
       "start": 5,
       "stop": 6,
-      "size": 1
+      "size": 5
     },
     {
-      "start": 6,
-      "stop": 7,
-      "size": 8
+      "start": 4,
+      "stop": 3,
+      "size": 5
+    },
+    {
+      "start": 3,
+      "stop": 6,
+      "size": 6
     }
   ],
   "robot": {
-    "size": 10
+    "size": 5
   },
   "goal": {
     "resources": 10
