@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.olympiad.model.VertexPath;
 import org.olympiad.model.answer.Answer;
+import org.olympiad.model.answer.AnswerAction;
 import org.olympiad.model.answer.AnswerStep;
 import org.olympiad.model.map.*;
 
@@ -72,6 +73,7 @@ public class PathResolver {
             baseResources.put(base.vertexId(), resources);
         }
 
+        List<AnswerStep> steps = new ArrayList<>();
 
         while(leftResources > 0) {
             List<Integer> path = new ArrayList<>();
@@ -106,9 +108,7 @@ public class PathResolver {
 
 
             //Возврат на базу
-//            startId = resultPathWithRepeats.get(resultPathWithRepeats.size() - 1);
-
-            List<Base> bases = new ArrayList<>();
+            List<Integer> basesIds = new ArrayList<>();
 
             if(!curResourcesByType.isEmpty()) {
                 for(Base base : baseVertices) {
@@ -117,8 +117,8 @@ public class PathResolver {
                             .toList();
 
                     for(String key : curResourcesByType.keySet()) {
-                        if(types.contains(key)) {
-                            bases.add(base);
+                        if(types.contains(key) && baseResources.containsKey(base.vertexId())) {
+                            basesIds.add(base.vertexId());
                             break;
                         }
                     }
@@ -126,37 +126,35 @@ public class PathResolver {
             }
 
 
-//            var bases = baseVertices.stream()
-//                    .filter(base -> !curResourcesByType.isEmpty() && new HashSet<>(base.resources().stream()
-//                            .map(BaseResource::name)
-//                            .toList())
-//                            .containsAll(curResourcesByType.keySet()))
-//                    .toList();
-
+            //Получение ближайшей базы
             int curLength;
             List<Integer> curPath = new ArrayList<>();
+            List<Integer> bestBasePath = new ArrayList<>();
+            int minBaseLength = Integer.MAX_VALUE;
 
-            for(Base base : bases) {
+            for(int baseId : basesIds) {
                 curPath.clear();
                 var pathFromBaseTo = paths(startId, edges, vertices);
-                curLength = pathFromBaseTo.get(base.vertexId()).length();
-                curPath.addAll(pathFromBaseTo.get(base.vertexId()).path());
+                curLength = pathFromBaseTo.get(baseId).length();
+                curPath.addAll(pathFromBaseTo.get(baseId).path());
 
-                if(curLength < pathLength) {
-                    pathLength = curLength;
-                    path = curPath;
+                if(curLength < minBaseLength) {
+                    minBaseLength = curLength;
+                    bestBasePath = new ArrayList<>(curPath);
                 }
             }
 
             if(curResSize == robotSize || curResSize >= leftResources) {
-                path = curPath;
+                pathLength = minBaseLength;
+                path = bestBasePath;
             }
 
-            System.out.println("check");
-
-
             //Выстраивание пути
+            List<AnswerStep> tempSteps = new ArrayList<>();
+
             for(int id : path) {
+                List<AnswerAction> actions = new ArrayList<>();
+
                 if(baseResources.containsKey(id)) { //Закидываем ресы на базу
                     List<BaseResource> list = new ArrayList<>();
                     for(BaseResource baseResource : baseResources.get(id)) {
@@ -171,6 +169,8 @@ public class PathResolver {
                         if(resources < baseResource.necessarySize()) {
                             list.add(new BaseResource(name, baseResource.necessarySize() - resources));
                             curResourcesByType.remove(baseResource.name());
+
+                            actions.add(new AnswerAction("put", baseResource.name(), baseResource.necessarySize() - resources));
                         } else {
                             resources -= baseResource.necessarySize();
                             if(resources > 0) {
@@ -178,7 +178,12 @@ public class PathResolver {
                             } else {
                                 curResourcesByType.remove(baseResource.name());
                             }
+                            actions.add(new AnswerAction("put", baseResource.name(), baseResource.necessarySize()));
                         }
+                    }
+
+                    if(list.isEmpty()) {
+                        baseResources.remove(id);
                     }
 
                     baseResources.replace(id, list);
@@ -200,52 +205,59 @@ public class PathResolver {
                     int[] values = new int[] {resources, needTypeResources, robotSize - curResSize};
 
                     int takeResources = Arrays.stream(values).min().getAsInt();
-                    if(curResourcesByType.containsKey(type)) {
-                        curResourcesByType.replace(type, takeResources + curResourcesByType.get(type));
-                    } else {
-                        curResourcesByType.put(type, takeResources);
-                    }
+
+                    if(takeResources != 0) {
+                        actions.add(new AnswerAction("get", type, takeResources));
+
+                        if(curResourcesByType.containsKey(type)) {
+                            curResourcesByType.replace(type, takeResources + curResourcesByType.get(type));
+                        } else {
+                            curResourcesByType.put(type, takeResources);
+                        }
 
 
-                    curResSize += takeResources;
+                        curResSize += takeResources;
 
-                    if(needTypeResources - takeResources == 0) {
-                        needResources.remove(type);
-                    }
-                    if(resources - takeResources == 0) {
-                        idToResources.remove(id);
-                    }
+                        if(needTypeResources - takeResources == 0) {
+                            needResources.remove(type);
+                        }
+                        if(resources - takeResources == 0) {
+                            idToResources.remove(id);
+                        }
 
-                    if(needResources.containsKey(type)) {
-                        needResources.replace(type, needTypeResources - takeResources);
-                    }
-                    if(idToResources.containsKey(id)) {
-                        idToResources.replace(id, new VertexResource(type, resources - takeResources));
+                        if(needResources.containsKey(type)) {
+                            needResources.replace(type, needTypeResources - takeResources);
+                        }
+                        if(idToResources.containsKey(id)) {
+                            idToResources.replace(id, new VertexResource(type, resources - takeResources));
+                        }
                     }
                 }
 
+                tempSteps.add(new AnswerStep(id, actions));
                 optimalPath.add(id);
             }
 
             resultPathWithRepeats.addAll(optimalPath);
+            steps.addAll(tempSteps);
 
             startId = resultPathWithRepeats.get(resultPathWithRepeats.size() - 1);
             needMines.clear();
         }
 
-        List<Integer> answerPath = new ArrayList<>();
+        List<AnswerStep> answerPath = new ArrayList<>();
 
         var previousId = -1;
-        for(int id : resultPathWithRepeats) {
-            if(id != previousId)
-                answerPath.add(id);
-            previousId = id;
+        for(AnswerStep step : steps) {
+            if(step.vertexId() != previousId)
+                answerPath.add(step);
+            previousId = step.vertexId();
         }
 
         System.out.println(answerPath);
 
         logger.info("Map: {}", map);
-        Answer answer = new Answer(List.of((new AnswerStep(0, null))));
+        Answer answer = new Answer(answerPath);
         logger.info("Answer: {}", answer);
         return answer;
     }
