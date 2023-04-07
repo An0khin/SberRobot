@@ -45,19 +45,6 @@ public class PathResolver {
         var vertices = map.vertexes();
         var robotSize = map.robot().maxSize();
 
-        Map<String, Integer> needResources = new HashMap<>();
-        int leftResources = 0;
-
-        for(Base base : map.bases()) {
-            for(BaseResource resource : base.resources()) {
-                needResources.put(
-                        resource.name(),
-                        resource.necessarySize() + needResources.getOrDefault(resource.name(), 0)
-                );
-                leftResources += resource.necessarySize();
-            }
-        }
-
         List<Base> baseVertices = map.bases();
 
         int startId = getBaseStartId(baseVertices, map.robot().baseStartName());
@@ -77,6 +64,19 @@ public class PathResolver {
                 .toList();
 
         allMines.forEach(mine -> idToResources.put(mine.id(), mine.resource()));
+
+        Map<String, Integer> needResources = new HashMap<>();
+        int leftResources = 0;
+
+        for(Base base : baseVertices) {
+            for(BaseResource resource : base.resources()) {
+                needResources.put(
+                        resource.name(),
+                        resource.necessarySize() + needResources.getOrDefault(resource.name(), 0)
+                );
+                leftResources += resource.necessarySize();
+            }
+        }
 
         int curResSize = 0;
         Map<String, Integer> curResourcesByType = new HashMap<>();

@@ -1,0 +1,401 @@
+{
+  "bases": [
+    {
+      "vertexId": 6,
+      "name": "base1",
+      "resources": [
+        {
+          "name": "iron",
+          "necessarySize": 7
+        }
+      ]
+    },
+    {
+      "vertexId": 7,
+      "name": "base2",
+      "resources": [
+        {
+          "name": "gold",
+          "necessarySize": 4
+        }
+      ]
+    },
+    {
+      "vertexId": 13,
+      "name": "base3",
+      "resources": [
+        {
+          "name": "aluminium",
+          "necessarySize": 10
+        }
+      ]
+    },
+    {
+      "vertexId": 17,
+      "name": "base4",
+      "resources": [
+        {
+          "name": "iron",
+          "necessarySize": 3
+        }
+      ]
+    },
+    {
+      "vertexId": 19,
+      "name": "base5",
+      "resources": [
+        {
+          "name": "aluminium",
+          "necessarySize": 15
+        },
+        {
+          "name": "gold",
+          "necessarySize": 1
+        }
+      ]
+    },
+    {
+      "vertexId": 24,
+      "name": "base6",
+      "resources": [
+        {
+          "name": "iron",
+          "necessarySize": 2
+        }
+      ]
+    }
+  ],
+  "robot": {
+    "baseStartName": "base4",
+    "maxSize": 5
+  },
+  "vertexes": [
+    {
+      "id": 1,
+      "type": "mine",
+      "resource": {
+        "name": "gold",
+        "size": 10
+      }
+    },
+    {
+      "id": 2,
+      "type": "mine",
+      "resource": {
+        "name": "iron",
+        "size": 10
+      }
+    },
+    {
+      "id": 3,
+      "type": "mine",
+      "resource": {
+        "name": "aluminium",
+        "size": 10
+      }
+    },
+    {
+      "id": 4,
+      "type": "mine",
+      "resource": {
+        "name": "aluminium",
+        "size": 5
+      }
+    },
+    {
+      "id": 9,
+      "type": "mine",
+      "resource": {
+        "name": "iron",
+        "size": 8
+      }
+    },
+    {
+      "id": 10,
+      "type": "mine",
+      "resource": {
+        "name": "gold",
+        "size": 5
+      }
+    },
+    {
+      "id": 5,
+      "type": "mine",
+      "resource": {
+        "name": "aluminium",
+        "size": 25
+      }
+    },
+    {
+      "id": 15,
+      "type": "mine",
+      "resource": {
+        "name": "gold",
+        "size": 1
+      }
+    },
+    {
+      "id": 14,
+      "type": "mine",
+      "resource": {
+        "name": "iron",
+        "size": 10
+      }
+    },
+    {
+      "id": 6,
+      "type": "base"
+    },
+    {
+      "id": 7,
+      "type": "base"
+    },
+    {
+      "id": 17,
+      "type": "base"
+    },
+    {
+      "id": 13,
+      "type": "base"
+    },
+    {
+      "id": 19,
+      "type": "base"
+    },
+    {
+      "id": 24,
+      "type": "base"
+    },
+    {
+      "id": 8,
+      "type": "cross"
+    },
+    {
+      "id": 11,
+      "type": "cross"
+    },
+    {
+      "id": 12,
+      "type": "cross"
+    },
+    {
+      "id": 18,
+      "type": "cross"
+    },
+    {
+      "id": 16,
+      "type": "cross"
+    },
+    {
+      "id": 20,
+      "type": "cross"
+    },
+    {
+      "id": 21,
+      "type": "cross"
+    },
+    {
+      "id": 22,
+      "type": "cross"
+    },
+    {
+      "id": 23,
+      "type": "cross"
+    },
+    {
+      "id": 25,
+      "type": "cross"
+    },
+    {
+      "id": 26,
+      "type": "cross"
+    }
+  ],
+  "edges": [
+    {
+      "start": 1,
+      "stop": 2,
+      "size": 5
+    },
+    {
+      "start": 2,
+      "stop": 3,
+      "size": 5
+    },
+    {
+      "start": 3,
+      "stop": 1,
+      "size": 5
+    },
+    {
+      "start": 6,
+      "stop": 5,
+      "size": 2
+    },
+    {
+      "start": 6,
+      "stop": 7,
+      "size": 9
+    },
+    {
+      "start": 5,
+      "stop": 4,
+      "size": 10
+    },
+    {
+      "start": 4,
+      "stop": 7,
+      "size": 3
+    },
+    {
+      "start": 7,
+      "stop": 8,
+      "size": 4
+    },
+    {
+      "start": 8,
+      "stop": 9,
+      "size": 1
+    },
+    {
+      "start": 7,
+      "stop": 10,
+      "size": 6
+    },
+    {
+      "start": 7,
+      "stop": 11,
+      "size": 7
+    },
+    {
+      "start": 8,
+      "stop": 18,
+      "size": 2
+    },
+    {
+      "start": 11,
+      "stop": 10,
+      "size": 3
+    },
+    {
+      "start": 10,
+      "stop": 18,
+      "size": 8
+    },
+    {
+      "start": 11,
+      "stop": 12,
+      "size": 2
+    },
+    {
+      "start": 11,
+      "stop": 14,
+      "size": 4
+    },
+    {
+      "start": 12,
+      "stop": 13,
+      "size": 4
+    },
+    {
+      "start": 18,
+      "stop": 13,
+      "size": 5
+    },
+    {
+      "start": 18,
+      "stop": 17,
+      "size": 4
+    },
+    {
+      "start": 17,
+      "stop": 16,
+      "size": 4
+    },
+    {
+      "start": 16,
+      "stop": 15,
+      "size": 4
+    },
+    {
+      "start": 13,
+      "stop": 15,
+      "size": 1
+    },
+    {
+      "start": 19,
+      "stop": 15,
+      "size": 4
+    },
+    {
+      "start": 19,
+      "stop": 13,
+      "size": 3
+    },
+    {
+      "start": 19,
+      "stop": 16,
+      "size": 5
+    },
+    {
+      "start": 20,
+      "stop": 16,
+      "size": 3
+    },
+    {
+      "start": 20,
+      "stop": 10,
+      "size": 1
+    },
+    {
+      "start": 21,
+      "stop": 13,
+      "size": 3
+    },
+    {
+      "start": 21,
+      "stop": 11,
+      "size": 6
+    },
+    {
+      "start": 22,
+      "stop": 12,
+      "size": 1
+    },
+    {
+      "start": 22,
+      "stop": 18,
+      "size": 4
+    },
+    {
+      "start": 23,
+      "stop": 5,
+      "size": 1
+    },
+    {
+      "start": 23,
+      "stop": 20,
+      "size": 7
+    },
+    {
+      "start": 24,
+      "stop": 16,
+      "size": 5
+    },
+    {
+      "start": 24,
+      "stop": 12,
+      "size": 9
+    },
+    {
+      "start": 25,
+      "stop": 14,
+      "size": 1
+    },
+    {
+      "start": 25,
+      "stop": 19,
+      "size": 3
+    }
+  ]
+}
