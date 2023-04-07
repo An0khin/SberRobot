@@ -17,15 +17,36 @@ public class PathResolver {
     private static final Logger logger = LogManager.getLogger(PathResolver.class);
     private final List<List<Vertex>> needMines = new ArrayList<>();
     private final Map<Integer, VertexResource> idToResources = new HashMap<>();
-    private final Map<String, Integer> needResources = new HashMap<>();
-    private List<Vertex> allMines = new ArrayList<>();
 
     // метод находит оптимальный путь для сбора необходимого количества ресурсов и доставки их на базу
     public Answer findAnswer(GameMap map) {
 
+        List<AnswerStep> steps = getSteps(map);
+
+        List<AnswerStep> answerPath = new ArrayList<>();
+
+        int previousId = -1;
+        for(AnswerStep step : steps) {
+            if(step.vertexId() != previousId)
+                answerPath.add(step);
+            previousId = step.vertexId();
+        }
+
+        System.out.println(answerPath);
+
+        logger.info("Map: {}", map);
+        Answer answer = new Answer(answerPath);
+        logger.info("Answer: {}", answer);
+        return answer;
+    }
+
+    public List<AnswerStep> getSteps(GameMap map) {
         var edges = map.edges();
         var vertices = map.vertexes();
         var robotSize = map.robot().maxSize();
+
+        Map<String, Integer> needResources = new HashMap<>();
+        int leftResources = 0;
 
         for(Base base : map.bases()) {
             for(BaseResource resource : base.resources()) {
@@ -33,26 +54,21 @@ public class PathResolver {
                         resource.name(),
                         resource.necessarySize() + needResources.getOrDefault(resource.name(), 0)
                 );
+                leftResources += resource.necessarySize();
             }
         }
 
-        int leftResources = needResources.values().stream()
-                .reduce(Integer::sum)
-                .orElse(0);
+        List<Base> baseVertices = map.bases();
 
-        var baseVertices = map.bases();
+        int startId = getBaseStartId(baseVertices, map.robot().baseStartName());
 
-        var baseStartId = baseVertices.stream()
-                .filter(base -> base.name().equals(map.robot().baseStartName()))
-                .map(Base::vertexId)
-                .findFirst()
-                .orElse(0);
+        var firstPath = paths(startId, edges, vertices);
 
-        int startId = baseStartId;
+        baseVertices = baseVertices.stream()
+                .filter(base -> firstPath.containsKey(base.vertexId()))
+                .toList();
 
-        var firstPath = paths(baseStartId, edges, vertices);
-
-        allMines = vertices.stream()
+        List<Vertex> allMines = vertices.stream()
                 .filter(vertex -> vertex.type().equals(MINE))
                 .filter(vertex -> firstPath.get(vertex.id()) != null)
                 .sorted(Comparator
@@ -62,16 +78,11 @@ public class PathResolver {
 
         allMines.forEach(mine -> idToResources.put(mine.id(), mine.resource()));
 
-        List<Integer> resultPathWithRepeats = new ArrayList<>();
-
-        var curResSize = 0;
+        int curResSize = 0;
         Map<String, Integer> curResourcesByType = new HashMap<>();
 
         Map<Integer, List<BaseResource>> baseResources = new HashMap<>();
-        for(Base base : baseVertices) {
-            List<BaseResource> resources = new ArrayList<>(base.resources());
-            baseResources.put(base.vertexId(), resources);
-        }
+        baseVertices.forEach(base -> baseResources.put(base.vertexId(), base.resources()));
 
         List<AnswerStep> steps = new ArrayList<>();
 
@@ -79,13 +90,11 @@ public class PathResolver {
             List<Integer> path = new ArrayList<>();
             int pathLength = Integer.MAX_VALUE;
 
-            List<Integer> optimalPath = new ArrayList<>();
-
 
             for(Map.Entry<String, Integer> entry : needResources.entrySet()) {
-                getRichMines(-1, entry.getValue(), entry.getKey(), new ArrayList<>());
+                int min = Math.min(robotSize, entry.getValue());
+                getRichMines(-1, min, entry.getKey(), new ArrayList<>(), allMines);
             }
-
 
             for(List<Vertex> mines : needMines) {
                 int curLength = 0;
@@ -105,7 +114,6 @@ public class PathResolver {
                     path = curPath;
                 }
             }
-
 
             //Возврат на базу
             List<Integer> basesIds = new ArrayList<>();
@@ -131,12 +139,12 @@ public class PathResolver {
             List<Integer> curPath = new ArrayList<>();
             List<Integer> bestBasePath = new ArrayList<>();
             int minBaseLength = Integer.MAX_VALUE;
+            var pathFromStartTo = paths(startId, edges, vertices);
 
             for(int baseId : basesIds) {
                 curPath.clear();
-                var pathFromBaseTo = paths(startId, edges, vertices);
-                curLength = pathFromBaseTo.get(baseId).length();
-                curPath.addAll(pathFromBaseTo.get(baseId).path());
+                curLength = pathFromStartTo.get(baseId).length();
+                curPath.addAll(pathFromStartTo.get(baseId).path());
 
                 if(curLength < minBaseLength) {
                     minBaseLength = curLength;
@@ -148,6 +156,12 @@ public class PathResolver {
                 pathLength = minBaseLength;
                 path = bestBasePath;
             }
+
+            if(bestBasePath.size() > 0 && canBaseResources(bestBasePath.get(bestBasePath.size() - 1), curResourcesByType, baseVertices) && minBaseLength <= pathLength) {
+                pathLength = minBaseLength;
+                path = bestBasePath;
+            }
+
 
             //Выстраивание пути
             List<AnswerStep> tempSteps = new ArrayList<>();
@@ -170,7 +184,7 @@ public class PathResolver {
                             list.add(new BaseResource(name, baseResource.necessarySize() - resources));
                             curResourcesByType.remove(baseResource.name());
 
-                            actions.add(new AnswerAction("put", baseResource.name(), baseResource.necessarySize() - resources));
+                            actions.add(new AnswerAction("put", baseResource.name(), resources));
                         } else {
                             resources -= baseResource.necessarySize();
                             if(resources > 0) {
@@ -200,7 +214,7 @@ public class PathResolver {
                     VertexResource mineVertex = idToResources.get(id);
                     int resources = mineVertex.size();
                     String type = mineVertex.name();
-                    int needTypeResources = needResources.get(type);
+                    int needTypeResources = needResources.getOrDefault(type, 0);
 
                     int[] values = new int[] {resources, needTypeResources, robotSize - curResSize};
 
@@ -235,33 +249,45 @@ public class PathResolver {
                 }
 
                 tempSteps.add(new AnswerStep(id, actions));
-                optimalPath.add(id);
             }
 
-            resultPathWithRepeats.addAll(optimalPath);
             steps.addAll(tempSteps);
 
-            startId = resultPathWithRepeats.get(resultPathWithRepeats.size() - 1);
+            startId = steps.get(steps.size() - 1).vertexId();
             needMines.clear();
         }
 
-        List<AnswerStep> answerPath = new ArrayList<>();
-
-        var previousId = -1;
-        for(AnswerStep step : steps) {
-            if(step.vertexId() != previousId)
-                answerPath.add(step);
-            previousId = step.vertexId();
-        }
-
-        System.out.println(answerPath);
-
-        logger.info("Map: {}", map);
-        Answer answer = new Answer(answerPath);
-        logger.info("Answer: {}", answer);
-        return answer;
+        return steps;
     }
 
+    private int getBaseStartId(List<Base> baseVertices, String baseStartName) {
+        for(Base base : baseVertices) {
+            if(base.name().equals(baseStartName)) {
+                return base.vertexId();
+            }
+        }
+
+        throw new NullPointerException("There is no " + baseStartName + " Base");
+    }
+
+    //Проверка на наличие хотя бы одного вида необходимых ресурсов в нужном количестве для базы
+    private boolean canBaseResources(int baseId, Map<String, Integer> curResourcesByType, List<Base> baseVertices) {
+        Optional<Base> base = baseVertices.stream().filter(b -> b.vertexId() == baseId).findFirst();
+
+        if(base.isEmpty()) {
+            return false;
+        }
+
+        for(BaseResource baseResource : base.get().resources()) {
+            if(curResourcesByType.getOrDefault(baseResource.name(), Integer.MIN_VALUE) >= baseResource.necessarySize()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //Получение всех путей от start узла до всех остальных
     Map<Integer, VertexPath> paths(int start, List<Edge> edges, List<Vertex> vertices) {
         Set<Integer> passedPoints = new HashSet<>();
         Map<Integer, VertexPath> fastestPaths = new HashMap<>();
@@ -272,7 +298,7 @@ public class PathResolver {
         );
 
         while(passedPoints.size() != vertices.size()) {
-            var fastestVertex = fastestPaths.values().stream()
+            VertexPath fastestVertex = fastestPaths.values().stream()
                     .sorted(Comparator.comparing(VertexPath::length))
                     .filter(Predicate.not(vertex -> passedPoints.contains(vertex.stop())))
                     .findFirst()
@@ -282,29 +308,29 @@ public class PathResolver {
                 break;
             }
 
-            var fastestVertexId = fastestVertex.stop();
+            int fastestVertexId = fastestVertex.stop();
 
-            var closePoints = getClosePoints(fastestVertexId, edges).stream()
+            Set<Integer> closePoints = getClosePoints(fastestVertexId, edges).stream()
                     .filter(Predicate.not(passedPoints::contains))
                     .collect(Collectors.toSet());
 
-            for(var pointId : closePoints) {
-                var curEdge = edges.stream()
+            for(int pointId : closePoints) {
+                Edge curEdge = edges.stream()
                         .filter(edge -> edge.start() == fastestVertexId && edge.stop() == pointId
                                 || edge.stop() == fastestVertexId && edge.start() == pointId)
                         .findFirst()
                         .orElseThrow();
 
-                var curVertex = vertices.stream()
+                Vertex curVertex = vertices.stream()
                         .filter(vertex -> vertex.id() == pointId)
                         .findFirst()
                         .orElseThrow();
 
-                var path = new LinkedList<>(fastestVertex.path());
+                LinkedList<Integer> path = new LinkedList<>(fastestVertex.path());
                 path.addLast(pointId);
 
-                var mineResource = idToResources.get(curVertex.id());
-                var curVertexPath = new VertexPath(
+                VertexResource mineResource = idToResources.get(curVertex.id());
+                VertexPath curVertexPath = new VertexPath(
                         pointId,
                         fastestVertex.length() + curEdge.size(),
                         fastestVertex.resources() + (mineResource == null ? 0 : mineResource.size()),
@@ -331,7 +357,8 @@ public class PathResolver {
         return fastestPaths;
     }
 
-    private void getRichMines(int counter, int goal, String type, List<Vertex> curMines) {
+    //Получение всех подходящих по количеству ресурсов множеств шахт
+    private void getRichMines(int counter, int goal, String type, List<Vertex> curMines, List<Vertex> allMines) {
         List<Vertex> allMinesByType = allMines.stream()
                 .filter(vertex -> vertex.resource().name().equals(type))
                 .toList();
@@ -352,12 +379,13 @@ public class PathResolver {
         if(counter != allMinesByType.size()) {
             for(int i = counter + 1; i < allMinesByType.size(); i++) {
                 curMines.add(allMinesByType.get(i));
-                getRichMines(i, goal, type, new ArrayList<>(curMines));
+                getRichMines(i, goal, type, new ArrayList<>(curMines), allMines);
                 curMines.remove(curMines.size() - 1);
             }
         }
     }
 
+    //Получение всех связанных с from узлов
     private Set<Integer> getClosePoints(int from, List<Edge> edges) {
         Set<Integer> closestPoints = new HashSet<>();
 
